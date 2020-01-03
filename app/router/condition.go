@@ -8,6 +8,7 @@ import (
 	"v2ray.com/core/common/net"
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/proxy"
+	"v2ray.com/core/tools/gfwlist"
 )
 
 type Condition interface {
@@ -129,6 +130,26 @@ func (m SubDomainMatcher) Apply(ctx context.Context) bool {
 		return false
 	}
 	return len(domain) == len(pattern) || domain[len(domain)-len(pattern)-1] == '.'
+}
+
+type GfwMatcher struct {
+	GFWList *gfwlist.GFWList
+}
+
+func NewGfwMatcher() Condition {
+	return &GfwMatcher{gfwlist.NewGFWList()}
+}
+
+func (m GfwMatcher) Apply(ctx context.Context) bool {
+	dest, ok := proxy.TargetFromContext(ctx)
+	if !ok {
+		return false
+	}
+	if !dest.Address.Family().IsDomain() {
+		return false
+	}
+	domain := dest.Address.Domain()
+	return m.GFWList.IsBlockedByGFW(domain)
 }
 
 type CIDRMatcher struct {

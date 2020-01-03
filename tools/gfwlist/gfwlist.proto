@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package v2ray.core.tools.gfwlist;
+option csharp_namespace = "V2Ray.Core.Tools.Gfwlist";
+option go_package = "gfwlist";
+option java_package = "com.v2ray.core.tools.gfwlist";
+option java_multiple_files = true;
+
+message Gfwlist {
+  string content = 1;
+}

@@ -38,6 +38,13 @@ message CIDR {
 }
 
 message RoutingRule {
+  // Type of RoutingRule value.
+  enum Type {
+    Field = 0;
+    ChinaIp = 1;
+    ChinaSites = 2;
+    GfwList = 3;
+  }
   string tag = 1;
   repeated Domain domain = 2;
   repeated CIDR cidr = 3;
@@ -46,6 +53,8 @@ message RoutingRule {
   repeated CIDR source_cidr = 6;
   repeated string user_email = 7;
   repeated string inbound_tag = 8;
+  // RoutingRule matching type.
+  Type type = 9;
 }
 
 message Config {

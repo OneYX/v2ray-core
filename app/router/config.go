@@ -51,7 +51,7 @@ func cidrToCondition(cidr []*CIDR, source bool) (Condition, error) {
 func (rr *RoutingRule) BuildCondition() (Condition, error) {
 	conds := NewConditionChan()
 
-	if len(rr.Domain) > 0 {
+	if rr.Type == RoutingRule_ChinaSites && len(rr.Domain) > 0 {
 		anyCond := NewAnyCondition()
 		for _, domain := range rr.Domain {
 			switch domain.Type {
@@ -70,6 +70,10 @@ func (rr *RoutingRule) BuildCondition() (Condition, error) {
 			}
 		}
 		conds.Add(anyCond)
+	}
+
+	if rr.Type == RoutingRule_GfwList {
+		conds.Add(NewGfwMatcher())
 	}
 
 	if len(rr.Cidr) > 0 {
