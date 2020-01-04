@@ -44,6 +44,7 @@ message RoutingRule {
     ChinaIp = 1;
     ChinaSites = 2;
     GfwList = 3;
+    GfwIp = 4;
   }
   string tag = 1;
   repeated Domain domain = 2;
