@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 	"strings"
+	"sync"
 
 	"v2ray.com/core/common/net"
 	"v2ray.com/core/common/protocol"
@@ -135,10 +136,11 @@ func (m SubDomainMatcher) Apply(ctx context.Context) bool {
 type GfwMatcher struct {
 	GFWList *gfwlist.GFWList
 	cache   map[string]bool
+	sync.Mutex
 }
 
 func NewGfwMatcher() Condition {
-	return &GfwMatcher{gfwlist.NewGFWList(), make(map[string]bool)}
+	return &GfwMatcher{GFWList: gfwlist.NewGFWList(), cache: make(map[string]bool)}
 }
 
 func (m GfwMatcher) Apply(ctx context.Context) bool {
@@ -151,10 +153,13 @@ func (m GfwMatcher) Apply(ctx context.Context) bool {
 	}
 	domain := dest.Address.Domain()
 	result, ok := m.cache[domain]
-	if !ok {
-		result := m.GFWList.IsBlockedByGFW(domain)
-		m.cache[domain] = result
+	if ok {
+		return result
 	}
+	m.Lock()
+	defer m.Unlock()
+	result = m.GFWList.IsBlockedByGFW(domain)
+	m.cache[domain] = result
 	return result
 }
 
