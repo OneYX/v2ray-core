@@ -71,12 +71,16 @@ func (r *Router) TakeDetour(ctx context.Context) (string, error) {
 		}
 	}
 
+	if r.domainStrategy != Config_IpIfNonMatch {
+		return "", ErrNoRuleApplicable
+	}
+
 	dest, ok := proxy.TargetFromContext(ctx)
 	if !ok {
 		return "", ErrNoRuleApplicable
 	}
 
-	if r.domainStrategy == Config_IpIfNonMatch && dest.Address.Family().IsDomain() {
+	if dest.Address.Family().IsDomain() {
 		log.Trace(newError("looking up IP for ", dest))
 		ipDests := r.resolveIP(dest)
 		if ipDests != nil {

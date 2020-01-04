@@ -134,10 +134,11 @@ func (m SubDomainMatcher) Apply(ctx context.Context) bool {
 
 type GfwMatcher struct {
 	GFWList *gfwlist.GFWList
+	cache   map[string]bool
 }
 
 func NewGfwMatcher() Condition {
-	return &GfwMatcher{gfwlist.NewGFWList()}
+	return &GfwMatcher{gfwlist.NewGFWList(), make(map[string]bool)}
 }
 
 func (m GfwMatcher) Apply(ctx context.Context) bool {
@@ -149,7 +150,12 @@ func (m GfwMatcher) Apply(ctx context.Context) bool {
 		return false
 	}
 	domain := dest.Address.Domain()
-	return m.GFWList.IsBlockedByGFW(domain)
+	result, ok := m.cache[domain]
+	if !ok {
+		result := m.GFWList.IsBlockedByGFW(domain)
+		m.cache[domain] = result
+	}
+	return result
 }
 
 type CIDRMatcher struct {
