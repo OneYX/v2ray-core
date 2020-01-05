@@ -136,14 +136,14 @@ func (m SubDomainMatcher) Apply(ctx context.Context) bool {
 type GfwMatcher struct {
 	GFWList *gfwlist.GFWList
 	cache   map[string]bool
-	sync.Mutex
+	mu      sync.RWMutex
 }
 
 func NewGfwMatcher() Condition {
 	return &GfwMatcher{GFWList: gfwlist.NewGFWList(), cache: make(map[string]bool)}
 }
 
-func (m GfwMatcher) Apply(ctx context.Context) bool {
+func (m *GfwMatcher) Apply(ctx context.Context) bool {
 	dest, ok := proxy.TargetFromContext(ctx)
 	if !ok {
 		return false
@@ -152,12 +152,20 @@ func (m GfwMatcher) Apply(ctx context.Context) bool {
 		return false
 	}
 	domain := dest.Address.Domain()
-	result, ok := m.cache[domain]
+	result, ok := func() (result bool, found bool) {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+		v, ok := m.cache[domain]
+		return v, ok
+	}()
 	if ok {
 		return result
 	}
-	m.Lock()
-	defer m.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if result, ok = m.cache[domain]; ok {
+		return result
+	}
 	result = m.GFWList.IsBlockedByGFW(domain)
 	m.cache[domain] = result
 	return result
