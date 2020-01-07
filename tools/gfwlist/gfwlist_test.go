@@ -20,5 +20,5 @@ func TestGfwList(t *testing.T) {
 	assert(gfwList.IsBlockedByGFW("google.com"), IsTrue)
 	assert(gfwList.IsBlockedByGFW("api.telegram.me"), IsTrue)
 	assert(gfwList.IsBlockedByGFW("www.qq.com"), IsFalse)
-	assert(gfwList.IsBlockedByGFW("id.heroku.com"), IsFalse)
+	assert(gfwList.IsBlockedByGFW("id.heroku.com"), IsTrue)
 }

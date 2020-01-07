@@ -162,7 +162,7 @@ func Parse(rules string) (*GFWList, error) {
 		if fastMatch {
 			gfw.ruleMap[str] = rule
 		} else {
-			gfw.ruleList = append(gfw.ruleList, rule)
+			// gfw.ruleList = append(gfw.ruleList, rule)
 		}
 	}
 	return gfw, nil
